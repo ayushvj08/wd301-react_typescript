@@ -14,12 +14,11 @@ export function Form(props: { closeFormCB: () => void }) {
     const [state, setState] = useState(formFields);
     const [newField, setNewField] = useState("");
 
-
     const addField = () => {
         setState([
             ...state,
             {
-                id: Number(new Date), label: newField, fieldtype: "text", value: newField
+                id: Number(new Date()), label: newField, fieldtype: "text", value: newField
             }
         ])
         setNewField("");
@@ -30,12 +29,31 @@ export function Form(props: { closeFormCB: () => void }) {
     )
 
     const clearForm = () => {
-        setState([])
+        setState(
+            state.map(e => {
+                e.value = "";
+                return e;
+            })
+        )
+        console.log(...state)
+
     }
 
+    const setValue = (value: string, id: number) => {
+
+        setState(
+            state.map(e => {
+                if (e.id === id)
+                    e.value = value;
+                return e;
+            })
+        )
+        console.log(...state)
+    }
     return (
         <div className='flex flex-col gap-4 p-4 divide-y '>
             <div className="divide-dotted">
+
                 {state.map(field => (
                     <LabellebInput
                         key={field.id}
@@ -43,7 +61,8 @@ export function Form(props: { closeFormCB: () => void }) {
                         value={field.value}
                         label={field.label}
                         fieldtype={field.fieldtype}
-                        removeFieldCB={removeField} />
+                        removeFieldCB={removeField}
+                        passValueCB={setValue} />
                 ))
                 }
             </div>
