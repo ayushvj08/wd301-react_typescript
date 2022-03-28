@@ -35,8 +35,6 @@ export function Form(props: { closeFormCB: () => void }) {
                 return e;
             })
         )
-        console.log(...state)
-
     }
 
     const setValue = (value: string, id: number) => {
@@ -48,7 +46,6 @@ export function Form(props: { closeFormCB: () => void }) {
                 return e;
             })
         )
-        console.log(...state)
     }
     return (
         <div className='flex flex-col gap-4 p-4 divide-y '>
