@@ -10,15 +10,18 @@ const formFields = [
     { id: 5, label: "Phone Number", fieldtype: "number", value: "" }
 ]
 
+const fieldTypes = ["text", "email", "date", "number"]
+
 export function Form(props: { closeFormCB: () => void }) {
     const [state, setState] = useState(formFields);
     const [newField, setNewField] = useState("");
+    const [newFieldType, setNewFieldType] = useState(fieldTypes[0])
 
     const addField = () => {
         setState([
             ...state,
             {
-                id: Number(new Date()), label: newField, fieldtype: "text", value: newField
+                id: Number(new Date()), label: newField, fieldtype: newFieldType, value: newField
             }
         ])
         setNewField("");
@@ -29,8 +32,9 @@ export function Form(props: { closeFormCB: () => void }) {
     )
 
     const clearForm = () => {
+        let newState = state;
         setState(
-            state.map(e => {
+            newState.map(e => {
                 e.value = "";
                 return e;
             })
@@ -38,9 +42,9 @@ export function Form(props: { closeFormCB: () => void }) {
     }
 
     const setValue = (value: string, id: number) => {
-
+        let newState = state;
         setState(
-            state.map(e => {
+            newState.map(e => {
                 if (e.id === id)
                     e.value = value;
                 return e;
@@ -67,6 +71,9 @@ export function Form(props: { closeFormCB: () => void }) {
                 <input type="text" value={newField} className="border-2 border-gray-200 rounded-lg pd-2 m-2 flex-1" onChange={e => {
                     setNewField(e.target.value)
                 }} />
+                <select name='formFieldTypes' onChange={e => setNewFieldType(e.target.value)}>
+                    {fieldTypes.map(type => <option key={type} value={type}>{type}</option>)}
+                </select>
                 <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg' onClick={addField}
                 >Add Field</button>
             </div>
