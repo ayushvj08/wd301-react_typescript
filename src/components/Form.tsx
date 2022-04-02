@@ -31,22 +31,24 @@ export function Form(props: { closeFormCB: () => void }) {
         setState(state.filter(field => field.id !== id))
     )
 
-    const clearForm = () => {
-        let newState = state;
-        setState(
-            newState.map(e => {
-                e.value = "";
-                return e;
-            })
-        )
-    }
+    const clearForm = () => setState(
+        state.map(e => (
+            {
+                ...e,
+                value: ""
+            }
+        ))
+    )
 
     const setValue = (value: string, id: number) => {
-        let newState = state;
         setState(
-            newState.map(e => {
-                if (e.id === id)
-                    e.value = value;
+            state.map(e => {
+                if (e.id === id) {
+                    return {
+                        ...e,
+                        value: value
+                    }
+                }
                 return e;
             })
         )
