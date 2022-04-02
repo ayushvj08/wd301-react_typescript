@@ -1,8 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { LabellebInput } from "../LabelledInput";
 
+interface formField {
+    id: number,
+    label: string,
+    fieldtype: string,
+    value: string
+}
 
-const formFields = [
+const initialFormFields: formField[] = [
     { id: 1, label: "First Name", fieldtype: "text", value: "" },
     { id: 2, label: "Last Name", fieldtype: "text", value: "" },
     { id: 3, label: "Email", fieldtype: "email", value: "" },
@@ -12,10 +18,42 @@ const formFields = [
 
 const fieldTypes = ["text", "email", "date", "number"]
 
+const initialState: () => formField[] = () => {
+    const formFieldsJSON = localStorage.getItem("formFields");
+    const persistentFormFields = formFieldsJSON ? JSON.parse(formFieldsJSON) : initialFormFields;
+    return persistentFormFields;
+}
+const saveFormData = (currentState: formField[]) => {
+    localStorage.setItem("formFields", JSON.stringify(currentState));
+};
+
 export function Form(props: { closeFormCB: () => void }) {
-    const [state, setState] = useState(formFields);
+    const [state, setState] = useState(initialState());
     const [newField, setNewField] = useState("");
     const [newFieldType, setNewFieldType] = useState(fieldTypes[0])
+
+    useEffect(() => {
+        console.log("Component MOUNTED");
+        const oldTitle = document.title;
+        document.title = "Form Editor";
+
+        // pass a cleanup function
+        return () => {
+            console.log("component UNMOUNTED");
+            document.title = "React App";
+        }
+    }, [])
+
+
+    useEffect(() => {
+        let timeout = setTimeout(() => {
+            saveFormData(state);
+            console.log("saved to local Storage");
+        }, 1000);
+        return () => {
+            clearTimeout(timeout);
+        }
+    }, [state])
 
     const addField = () => {
         setState([
@@ -31,22 +69,17 @@ export function Form(props: { closeFormCB: () => void }) {
         setState(state.filter(field => field.id !== id))
     )
 
-    const clearForm = () => {
-        let newState = state;
-        setState(
-            newState.map(e => {
-                e.value = "";
-                return e;
-            })
-        )
-    }
+    const clearForm = () => setState(
+        state.map(e => ({ ...e, value: "" }))
+    )
 
     const setValue = (value: string, id: number) => {
-        let newState = state;
+
         setState(
-            newState.map(e => {
+            state.map(e => {
                 if (e.id === id)
                     e.value = value;
+
                 return e;
             })
         )
@@ -78,7 +111,7 @@ export function Form(props: { closeFormCB: () => void }) {
                 >Add Field</button>
             </div>
             <div className="flex gap-4">
-                <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Submit</button>
+                <button onClick={(_) => saveFormData(state)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Save</button>
                 <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg' onClick={clearForm} >Clear Form</button>
                 <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg' onClick={props.closeFormCB}>Close Form</button>
             </div>
