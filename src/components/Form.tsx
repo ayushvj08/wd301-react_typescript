@@ -1,5 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { LabellebInput } from "../LabelledInput";
+
+interface formData {
+    title: string;
+    formFields: formField[];
+}
 
 interface formField {
     id: number,
@@ -16,26 +21,28 @@ const initialFormFields: formField[] = [
     { id: 5, label: "Phone Number", fieldtype: "number", value: "" }
 ]
 
-const fieldTypes = ["text", "email", "date", "number"]
+const fieldTypes = ["text", "email", "date", "number"];
 
-const initialState: () => formField[] = () => {
-    const formFieldsJSON = localStorage.getItem("formFields");
-    const persistentFormFields = formFieldsJSON ? JSON.parse(formFieldsJSON) : initialFormFields;
+const initialState: () => formData = () => {
+    const formFieldsJSON = localStorage.getItem("formData");
+    const persistentFormFields = formFieldsJSON ? JSON.parse(formFieldsJSON) : { title: "Untitled Form", formFields: initialFormFields };
     return persistentFormFields;
 }
-const saveFormData = (currentState: formField[]) => {
-    localStorage.setItem("formFields", JSON.stringify(currentState));
+const saveFormData = (currentState: formData) => {
+    localStorage.setItem("formData", JSON.stringify(currentState));
 };
 
 export function Form(props: { closeFormCB: () => void }) {
     const [state, setState] = useState(initialState());
     const [newField, setNewField] = useState("");
-    const [newFieldType, setNewFieldType] = useState(fieldTypes[0])
+    const [newFieldType, setNewFieldType] = useState(fieldTypes[0]);
+    const titleRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         console.log("Component MOUNTED");
         const oldTitle = document.title;
         document.title = "Form Editor";
+        titleRef.current?.focus();
 
         // pass a cleanup function
         return () => {
@@ -56,39 +63,47 @@ export function Form(props: { closeFormCB: () => void }) {
     }, [state])
 
     const addField = () => {
-        setState([
+        setState({
             ...state,
-            {
-                id: Number(new Date()), label: newField, fieldtype: newFieldType, value: newField
-            }
-        ])
+            formFields: [
+                ...state.formFields,
+                {
+                    id: Number(new Date()), label: newField, fieldtype: newFieldType, value: newField
+                }
+            ]
+        })
         setNewField("");
     }
 
-    const removeField = (id: number) => (
-        setState(state.filter(field => field.id !== id))
-    )
+    const removeField = (id: number) => setState({
+        ...state,
+        formFields: state.formFields.filter(field => field.id !== id)
+    })
 
-    const clearForm = () => setState(
-        state.map(e => ({ ...e, value: "" }))
-    )
+    const clearForm = () => setState({
+        ...state,
+        formFields: state.formFields.map(field => ({ ...field, value: "" }))
+    })
 
-    const setValue = (value: string, id: number) => {
+    const setValue = (value: string, id: number) => setState({
+        ...state,
+        formFields: state.formFields.map(field => {
+            if (field.id === id)
+                return {
+                    ...field,
+                    value: value
+                }
+            return field;
+        })
+    })
 
-        setState(
-            state.map(e => {
-                if (e.id === id)
-                    e.value = value;
-
-                return e;
-            })
-        )
-    }
     return (
         <div className='flex flex-col gap-4 p-4 divide-y '>
+            <input type="text" ref={titleRef} value={state.title} className="border-2 border-gray-200 rounded-lg pd-2 m-2 flex-1"
+                onChange={e => { setState({ ...state, title: e.target.value }) }} />
             <div className="divide-dotted">
 
-                {state.map(field => (
+                {state.formFields.map(field => (
                     <LabellebInput
                         key={field.id}
                         id={field.id}
@@ -97,13 +112,12 @@ export function Form(props: { closeFormCB: () => void }) {
                         fieldtype={field.fieldtype}
                         removeFieldCB={removeField}
                         passValueCB={setValue} />
-                ))
-                }
+                ))}
+
             </div>
             <div className="flex gap-2">
-                <input type="text" value={newField} className="border-2 border-gray-200 rounded-lg pd-2 m-2 flex-1" onChange={e => {
-                    setNewField(e.target.value)
-                }} />
+                <input type="text" value={newField} className="border-2 border-gray-200 rounded-lg pd-2 m-2 flex-1"
+                    onChange={e => setNewField(e.target.value)} />
                 <select name='formFieldTypes' onChange={e => setNewFieldType(e.target.value)}>
                     {fieldTypes.map(type => <option key={type} value={type}>{type}</option>)}
                 </select>
