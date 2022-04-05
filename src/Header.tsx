@@ -10,8 +10,19 @@ export default function Header(props: { title: string }) {
                 alt="logo"
                 style={{ animation: "spin 2s linear infinite" }}
             />
-            <h1 className="text-center text-xl flex-1">{props.title}</h1>
-
+            {/* <h1 className="text-center text-xl flex-1">{props.title}</h1> */}
+            <div>
+                {
+                    [
+                        { page: "Home", url: "/" },
+                        { page: "About", url: "/about" }
+                    ].map((link) => (
+                        <a key={link.url} href={link.url} className="text-gray-800 p-2 m-2 uppercase">
+                            {link.page}
+                        </a>
+                    ))
+                }
+            </div>
         </div>
     );
 }
