@@ -73,7 +73,7 @@ export function Form(props: { closeFormCB: () => void, formId: number, handleFor
         return () => {
             clearTimeout(timeout);
         }
-    }, [state])
+    }, [state, props])
 
     const addField = () => {
         setState({
