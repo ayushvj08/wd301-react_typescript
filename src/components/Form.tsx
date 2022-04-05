@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { LabellebInput } from "../LabelledInput";
 
-interface formData {
-    title: string;
+export interface formData {
+    id: number,
+    title: string,
     formFields: formField[];
 }
 
@@ -13,7 +14,7 @@ interface formField {
     value: string
 }
 
-const initialFormFields: formField[] = [
+export const initialFormFields: formField[] = [
     { id: 1, label: "First Name", fieldtype: "text", value: "" },
     { id: 2, label: "Last Name", fieldtype: "text", value: "" },
     { id: 3, label: "Email", fieldtype: "email", value: "" },
@@ -23,24 +24,35 @@ const initialFormFields: formField[] = [
 
 const fieldTypes = ["text", "email", "date", "number"];
 
-const initialState: () => formData = () => {
-    const formFieldsJSON = localStorage.getItem("formData");
-    const persistentFormFields = formFieldsJSON ? JSON.parse(formFieldsJSON) : { title: "Untitled Form", formFields: initialFormFields };
-    return persistentFormFields;
+export const getLocalForms: () => formData[] = () => {
+    const savedFormsJSON = localStorage.getItem("savedForms");
+    return savedFormsJSON ? JSON.parse(savedFormsJSON) : []
 }
-const saveFormData = (currentState: formData) => {
-    localStorage.setItem("formData", JSON.stringify(currentState));
+
+const initialState: (formId: number) => formData = (formId: number) => {
+    const localForms = getLocalForms();
+    const currentForm = localForms.filter(form => form.id === formId);
+    return currentForm[0];
 };
 
-export function Form(props: { closeFormCB: () => void }) {
-    const [state, setState] = useState(initialState());
+const saveLocalForms = (localForms: formData[]) => {
+    localStorage.setItem("savedForms", JSON.stringify(localForms));
+}
+
+const saveFormData = (currentState: formData) => {
+    const localForms = getLocalForms();
+    const updatedLocalForms = localForms.map(form => form.id === currentState.id ? currentState : form);
+    saveLocalForms(updatedLocalForms);
+};
+
+export function Form(props: { closeFormCB: () => void, formId: number, handleFormChangeCB: () => void }) {
+    const [state, setState] = useState(() => initialState(props.formId));
     const [newField, setNewField] = useState("");
     const [newFieldType, setNewFieldType] = useState(fieldTypes[0]);
     const titleRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         console.log("Component MOUNTED");
-        const oldTitle = document.title;
         document.title = "Form Editor";
         titleRef.current?.focus();
 
@@ -55,6 +67,7 @@ export function Form(props: { closeFormCB: () => void }) {
     useEffect(() => {
         let timeout = setTimeout(() => {
             saveFormData(state);
+            props.handleFormChangeCB();
             console.log("saved to local Storage");
         }, 1000);
         return () => {
