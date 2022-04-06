@@ -31,8 +31,18 @@ export const getLocalForms: () => formData[] = () => {
 
 const initialState: (formId: number) => formData = (formId: number) => {
     const localForms = getLocalForms();
+    if (formId === 0) {
+        const newForm = {
+            id: Number(new Date()),
+            title: "Untitled Form",
+            formFields: initialFormFields
+        };
+        localStorage.setItem("savedForms", JSON.stringify([...localForms, newForm]));
+        return newForm;
+    }
     const currentForm = localForms.filter(form => form.id === formId);
     return currentForm[0];
+
 };
 
 const saveLocalForms = (localForms: formData[]) => {
@@ -45,7 +55,7 @@ const saveFormData = (currentState: formData) => {
     saveLocalForms(updatedLocalForms);
 };
 
-export function Form(props: { closeFormCB: () => void, formId: number, handleFormChangeCB: () => void }) {
+export function Form(props: { formId: number }) {
     const [state, setState] = useState(() => initialState(props.formId));
     const [newField, setNewField] = useState("");
     const [newFieldType, setNewFieldType] = useState(fieldTypes[0]);
@@ -67,13 +77,12 @@ export function Form(props: { closeFormCB: () => void, formId: number, handleFor
     useEffect(() => {
         let timeout = setTimeout(() => {
             saveFormData(state);
-            props.handleFormChangeCB();
             console.log("saved to local Storage");
         }, 1000);
         return () => {
             clearTimeout(timeout);
         }
-    }, [state, props])
+    }, [state])
 
     const addField = () => {
         setState({
@@ -140,7 +149,7 @@ export function Form(props: { closeFormCB: () => void, formId: number, handleFor
             <div className="flex gap-4">
                 <button onClick={(_) => saveFormData(state)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Save</button>
                 <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg' onClick={clearForm} >Clear Form</button>
-                <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg' onClick={props.closeFormCB}>Close Form</button>
+                <a href="/" className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg' >Close Form</a>
             </div>
         </div>
 
