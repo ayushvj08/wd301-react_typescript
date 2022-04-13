@@ -1,3 +1,4 @@
+import { Link, navigate } from "raviger";
 import React, { useState, useEffect, useRef } from "react";
 import { LabellebInput } from "../LabelledInput";
 
@@ -82,7 +83,12 @@ export function Form(props: { formId: number }) {
         return () => {
             clearTimeout(timeout);
         }
-    }, [state])
+    }, [state]);
+
+    useEffect(() => {
+        state.id !== props.formId && navigate(`/forms/${state.id}`)
+    }, [state.id, props.formId])
+
 
     const addField = () => {
         setState({
@@ -149,7 +155,7 @@ export function Form(props: { formId: number }) {
             <div className="flex gap-4">
                 <button onClick={(_) => saveFormData(state)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Save</button>
                 <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg' onClick={clearForm} >Clear Form</button>
-                <a href="/" className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg' >Close Form</a>
+                <Link href="/" className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg' >Close Form</Link>
             </div>
         </div>
 
