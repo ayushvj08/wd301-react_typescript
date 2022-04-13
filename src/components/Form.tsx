@@ -14,7 +14,7 @@ interface formField {
     value: string
 }
 
-export const initialFormFields: formField[] = [
+const initialFormFields: formField[] = [
     { id: 1, label: "First Name", fieldtype: "text", value: "" },
     { id: 2, label: "Last Name", fieldtype: "text", value: "" },
     { id: 3, label: "Email", fieldtype: "email", value: "" },

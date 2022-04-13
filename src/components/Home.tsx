@@ -2,9 +2,13 @@ import React, { useState } from "react";
 import logo from "../logo.svg";
 import { formData, getLocalForms } from "./Form";
 import { ListForm } from "./ListForm";
+import { useQueryParams } from "raviger";
 
 export function Home() {
     const [form, setFormState] = useState(getLocalForms());
+
+    const [{ search }, setQuery] = useQueryParams();
+    const [searchString, setSearchString] = useState("");
 
     const deleteForm = (form: formData) => {
         const savedForms = getLocalForms();
@@ -25,10 +29,19 @@ export function Home() {
                 <p className="font-bold ">Available Forms</p>
                 <a href={`/forms/0`} className="font-bold py-2 px-4 my-4 mx-2 rounded-md bg-green-600 text-white">New Form</a>
             </div>
+            <form action="/" method="GET" onSubmit={e => {
+                e.preventDefault();
+                setQuery({ search: searchString })
+            }}>
+                <label>Search</label>
+                <input type="text" name="search" value={searchString} onChange={e => setSearchString(e.target.value)} className="w-full border-2 border-gray-200 rounded-lg pd-2 m-2 flex-1" />
+            </form>
+
             {
-                form.map(form => (
-                    <ListForm form={form} deleteFormCB={deleteForm} key={form.id} />
-                ))}
+                form.filter((form) => form.title.toLowerCase().includes(search?.toLowerCase() || ""))
+                    .map(form => (
+                        <ListForm form={form} deleteFormCB={deleteForm} key={form.id} />
+                    ))}
 
         </div>
 
