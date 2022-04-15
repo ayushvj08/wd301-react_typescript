@@ -14,6 +14,7 @@ export function ListForm(props: { form: formData, deleteFormCB: (form: formData)
                 <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'
                     onClick={() => props.deleteFormCB(props.form)}
                 >Delete Form</button>
+                <Link href={`preview/${props.form.id}`} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Preview Form</Link>
             </div>
         </div>
     )

@@ -42,7 +42,8 @@ export function Home() {
                 form.filter((form) => form.title.toLowerCase().includes(search?.toLowerCase() || ""))
                     .map(form => (
                         <ListForm form={form} deleteFormCB={deleteForm} key={form.id} />
-                    ))}
+                    ))
+            }
 
         </div>
 

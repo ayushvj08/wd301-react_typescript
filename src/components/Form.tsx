@@ -96,7 +96,7 @@ export function Form(props: { formId: number }) {
             formFields: [
                 ...state.formFields,
                 {
-                    id: Number(new Date()), label: newField, fieldtype: newFieldType, value: newField
+                    id: Number(new Date()), label: newField, fieldtype: newFieldType, value: ''
                 }
             ]
         })
@@ -124,6 +124,18 @@ export function Form(props: { formId: number }) {
             return field;
         })
     })
+    const setTitle = (label: string, fieldId: number) =>
+        setState({
+            ...state,
+            formFields: state.formFields.map(field => {
+                if (field.id === fieldId)
+                    return {
+                        ...field,
+                        label: label
+                    }
+                return field
+            })
+        })
 
     return (
         <div className='flex flex-col gap-4 p-4 divide-y '>
@@ -139,7 +151,8 @@ export function Form(props: { formId: number }) {
                         label={field.label}
                         fieldtype={field.fieldtype}
                         removeFieldCB={removeField}
-                        passValueCB={setValue} />
+                        passValueCB={setValue}
+                        setFieldLabelCB={setTitle} />
                 ))}
 
             </div>
