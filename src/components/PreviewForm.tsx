@@ -22,7 +22,7 @@ export default function PreviewForm(props: { formId: Number }) {
             <div className='text-blue-700'>{currentForm().title}</div>
 
             {
-                state === undefined ? (
+                !state ? (
                     <> <div>Thanks for attempting the Quiz!</div>
                         Your Answers are : <br /> {answer.map(ans => (<div key={1000 * Math.random()}>{answer.indexOf(ans) + 1}. {ans} </div>))}
                     </>
