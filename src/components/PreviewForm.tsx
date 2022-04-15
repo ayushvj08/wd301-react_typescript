@@ -3,8 +3,8 @@ import { getLocalForms } from "./Form";
 
 export default function PreviewForm(props: { formId: Number }) {
     const [val, setVal] = useState('');
-    const s: string[] = [];
-    const [answer, setAnswer] = useState(s);
+    const initialState: string[] = [];
+    const [answer, setAnswer] = useState(initialState);
 
     const currentForm = () => getLocalForms().filter(form => form.id === props.formId)[0];
     const [state, setState] = useState(currentForm().formFields[0]);
