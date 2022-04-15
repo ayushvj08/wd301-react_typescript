@@ -8,19 +8,39 @@ export interface formData {
     formFields: formField[];
 }
 
-interface formField {
+// interface formField {
+//     id: number,
+//     label: string,
+//     fieldtype: textFieldTypes,
+//     value: string
+// }
+
+type textFieldTypes = "text" | "email" | "date" | "number"
+
+type TextField = {
+    kind: "text",
     id: number,
     label: string,
-    fieldtype: string,
+    fieldtype: textFieldTypes,
     value: string
 }
 
+type DropdownField = {
+    kind: "dropdown",
+    id: number,
+    label: string,
+    options: string[],
+    value: string
+}
+
+type formField = TextField | DropdownField
+
 const initialFormFields: formField[] = [
-    { id: 1, label: "First Name", fieldtype: "text", value: "" },
-    { id: 2, label: "Last Name", fieldtype: "text", value: "" },
-    { id: 3, label: "Email", fieldtype: "email", value: "" },
-    { id: 4, label: "Date of Birth", fieldtype: "date", value: "" },
-    { id: 5, label: "Phone Number", fieldtype: "number", value: "" }
+    { kind: "text", id: 1, label: "First Name", fieldtype: "text", value: "" },
+    { kind: "text", id: 2, label: "Last Name", fieldtype: "text", value: "" },
+    { kind: "text", id: 3, label: "Email", fieldtype: "email", value: "" },
+    { kind: "text", id: 4, label: "Date of Birth", fieldtype: "date", value: "" },
+    { kind: "text", id: 5, label: "Phone Number", fieldtype: "number", value: "" }
 ]
 
 const fieldTypes = ["text", "email", "date", "number"];
@@ -96,7 +116,7 @@ export function Form(props: { formId: number }) {
             formFields: [
                 ...state.formFields,
                 {
-                    id: Number(new Date()), label: newField, fieldtype: newFieldType, value: ''
+                    kind: "text", id: Number(new Date()), label: newField, fieldtype: "text", value: ''
                 }
             ]
         })
@@ -143,17 +163,26 @@ export function Form(props: { formId: number }) {
                 onChange={e => { setState({ ...state, title: e.target.value }) }} />
             <div className="divide-dotted">
 
-                {state.formFields.map(field => (
-                    <LabellebInput
-                        key={field.id}
-                        id={field.id}
-                        value={field.value}
-                        label={field.label}
-                        fieldtype={field.fieldtype}
-                        removeFieldCB={removeField}
-                        passValueCB={setValue}
-                        setFieldLabelCB={setTitle} />
-                ))}
+                {state.formFields.map(field => {
+                    switch (field.kind) {
+                        case "text":
+                            return <LabellebInput
+                                key={field.id}
+                                id={field.id}
+                                value={field.value}
+                                label={field.label}
+                                fieldtype={field.fieldtype}
+                                removeFieldCB={removeField}
+                                passValueCB={setValue}
+                                setFieldLabelCB={setTitle} />
+
+                        case "dropdown":
+                            return <div></div>
+                        default:
+                            break;
+                    }
+
+                })}
 
             </div>
             <div className="flex gap-2">

@@ -22,16 +22,23 @@ export default function PreviewForm(props: { formId: Number }) {
             <div className='text-blue-700'>{currentForm().title}</div>
 
             {
-                state === undefined ? (
+                !state ? (
                     <> <div>Thanks for attempting the Quiz!</div>
                         Your Answers are : <br /> {answer.map(ans => (<div key={1000 * Math.random()}>{answer.indexOf(ans) + 1}. {ans} </div>))}
                     </>
                 ) : (
-                    <div>
-                        <label className='w-full block'>{currentIndex() + 1}. {state.label}</label>
-                        <input type={state.fieldtype} className='border-2 border-gray-200 rounded-lg m-2' onChange={e => setVal(e.target.value)} value={val} />
-                        <button onClick={changeQuestion} className='block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Next</button>
-                    </div>)
+                    state.kind === "text" ? (
+                        <div>
+                            <label className='w-full block'>{currentIndex() + 1}. {state.label}</label>
+                            <input type={state.fieldtype} className='border-2 border-gray-200 rounded-lg m-2' onChange={e => setVal(e.target.value)} value={val} />
+                            <button onClick={changeQuestion} className='block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Next</button>
+                        </div>)
+                        : (
+                            <div>Dropdown</div>
+                        )
+
+
+                )
 
             }
 
