@@ -138,8 +138,8 @@ export function Form(props: { formId: number }) {
                 return { ...field, value: "" }
             else if (field.kind === "radio") return { ...field, value: "" }
             else
-                setdropDownvalues([])
-            return { ...field, values: [] }
+                // setdropDownvalues([])
+                return { ...field, values: [] }
         })
     })
 
@@ -168,81 +168,7 @@ export function Form(props: { formId: number }) {
             })
         })
     }
-    const [newOption, setNewOption] = useState('');
 
-    const setNewOptionLabel = (e: string) => setNewOption(e);
-
-    const addNewDropdown = () => {
-        setState({
-            ...state,
-            formFields: [...state.formFields,
-            { kind: "dropdown", id: Number(new Date()), label: "New Dropdown", options: ["Low", "High", "Med", "Avg"], value: [] }
-            ]
-        })
-    }
-    const addNewOption = (id: number) => {
-        setState({
-            ...state,
-            formFields: state.formFields.map(field => {
-                if (field.id === id && field.kind === "dropdown") {
-                    field.options.push(newOption)
-                    return field
-                }
-                return field
-            })
-        })
-        setNewOption('');
-    }
-
-    const setDropOptions = (option: string, id: number, index: number) => {
-        setState({
-            ...state,
-            formFields: state.formFields.map(field => {
-                if (field.id === id && field.kind === "dropdown") {
-                    field.options[index] = option
-                    return field
-                }
-                return field
-            })
-        })
-    }
-
-    const initialDropdownState = (id: Number) => {
-        const { value } = state.formFields.filter(field => field.id === id && field.kind === "dropdown")[0];
-        return typeof value !== "string" ? value : []
-    }
-
-
-    const initialDropdownValues: () => string[] = () => {
-        const { value } = state.formFields.filter(field => field.kind === "dropdown")[0];
-        return typeof value !== "string" ? value : []
-    }
-
-    const [dropDownvalues, setdropDownvalues] = useState(() => initialDropdownValues());
-
-    const saveDropdownValues = (checkedOption: string, id: number, options: string[]) => {
-        const filteredDropValues = dropDownvalues.filter(value => value !== checkedOption);
-        dropDownvalues.includes(checkedOption) ? setdropDownvalues(filteredDropValues) : setdropDownvalues([...dropDownvalues, checkedOption])
-        setState({
-            ...state,
-            formFields: state.formFields.map(field => {
-                if (field.id === id)
-                    return {
-                        ...field,
-                        kind: "dropdown",
-                        options: options,
-                        value: dropDownvalues.includes(checkedOption) ? filteredDropValues : [...dropDownvalues, checkedOption]
-                    }
-                return field
-            })
-        })
-    }
-    const removeDropdown = (id: number) => {
-        setState({
-            ...state,
-            formFields: state.formFields.filter(field => field.id !== id)
-        })
-    }
 
     const setStateprop = (state1: formData) => {
         setState(state1)
@@ -272,18 +198,9 @@ export function Form(props: { formId: number }) {
                                 key={field.id}
                                 field={field}
                                 setFieldLabelCB={setFieldLabel}
-                                addNewDropdownCB={addNewDropdown}
-                                setDropOptionsCB={setDropOptions}
                                 removeOptionCB={removeOption}
-                                // saveDropdownValuesCB={saveDropdownValues}
-                                addNewOptionCB={addNewOption}
-                                setNewOptionLabelCB={setNewOptionLabel}
-                                newOption={newOption}
-                                // dropDownvalues={dropDownvalues}
-                                removeDropdownCB={removeDropdown}
                                 state={state}
                                 setStatepropCB={setStateprop}
-                            // initialDropdownStateCB={initialDropdownState}
                             />
 
                         case "radio":

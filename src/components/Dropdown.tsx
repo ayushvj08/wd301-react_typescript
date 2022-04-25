@@ -4,16 +4,8 @@ import { DropdownField, formField, formData } from "./Form";
 export default function Dropdown(props: {
     key: number
     field: DropdownField,
-    // saveDropdownValuesCB: (checkedOption: string, id: number, options: string[]) => void,
-    addNewDropdownCB: () => void,
-    setDropOptionsCB: (option: string, id: number, index: number) => void,
     removeOptionCB: (id: number, index: number) => void,
     setFieldLabelCB: (label: string, fieldId: number) => void
-    addNewOptionCB: (id: number) => void,
-    setNewOptionLabelCB: (e: string) => void,
-    newOption: string,
-    // dropDownvalues: string[],
-    removeDropdownCB: (id: number) => void,
     state: formData,
     setStatepropCB: (state1: formData) => void
 }) {
@@ -44,6 +36,54 @@ export default function Dropdown(props: {
         })
     }
 
+
+    const removeDropdown = (id: number) => {
+        props.setStatepropCB({
+            ...props.state,
+            formFields: props.state.formFields.filter(field => field.id !== id)
+        })
+    }
+
+    const [newOption, setNewOption] = useState('');
+
+    const setNewOptionLabel = (e: string) => setNewOption(e);
+
+    const addNewDropdown = () => {
+        props.setStatepropCB({
+            ...props.state,
+            formFields: [...props.state.formFields,
+            { kind: "dropdown", id: Number(new Date()), label: "New Dropdown", options: ["Low", "High", "Med", "Avg"], value: [] }
+            ]
+        })
+    }
+
+    const addNewOption = (id: number) => {
+        props.setStatepropCB({
+            ...props.state,
+            formFields: props.state.formFields.map(field => {
+                if (field.id === id && field.kind === "dropdown") {
+                    field.options.push(newOption)
+                    return field
+                }
+                return field
+            })
+        })
+        setNewOption('');
+    }
+
+    const setDropOptions = (option: string, id: number, index: number) => {
+        props.setStatepropCB({
+            ...props.state,
+            formFields: props.state.formFields.map(field => {
+                if (field.id === id && field.kind === "dropdown") {
+                    field.options[index] = option
+                    return field
+                }
+                return field
+            })
+        })
+    }
+
     return (
         <div key={props.field.id} className="m-2">
             <label><input type={"text"} className="border-2 border-gray-200 rounded-lg" onChange={e => props.setFieldLabelCB(e.target.value, props.field.id)} value={props.field.label} /></label>
@@ -60,8 +100,8 @@ export default function Dropdown(props: {
                             }
                         </svg>
                     </div>
-                    <button onClick={_ => props.removeDropdownCB(props.field.id)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Remove</button>
-                    <button onClick={_ => props.addNewDropdownCB()} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Add</button>
+                    <button onClick={_ => removeDropdown(props.field.id)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Remove</button>
+                    <button onClick={_ => addNewDropdown()} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Add</button>
                 </div>
                 {
                     focusInput ? (
@@ -76,7 +116,7 @@ export default function Dropdown(props: {
                                             />
                                             <p className="px-2">
                                                 <input type={'text'} className="bg-inherit w-20" autoFocus
-                                                    onChange={e => props.setDropOptionsCB(e.target.value, props.field.id, props.field.options.indexOf(option))}
+                                                    onChange={e => setDropOptions(e.target.value, props.field.id, props.field.options.indexOf(option))}
                                                     value={option}
                                                 />
                                             </p>
@@ -91,11 +131,11 @@ export default function Dropdown(props: {
                                 <input type={'checkbox'} />
                                 <p className="px-2">
                                     <input type={'text'} className="bg-inherit w-20" autoFocus
-                                        onChange={e => props.setNewOptionLabelCB(e.target.value)}
-                                        value={props.newOption}
+                                        onChange={e => setNewOptionLabel(e.target.value)}
+                                        value={newOption}
                                     />
                                 </p>
-                                <button className="button bg-gray-400 text-white p-1 rounded" onClick={() => props.addNewOptionCB(props.field.id)}>Add</button>
+                                <button className="button bg-gray-400 text-white p-1 rounded" onClick={() => addNewOption(props.field.id)}>Add</button>
                             </div>
                         </div>
                     ) : null
