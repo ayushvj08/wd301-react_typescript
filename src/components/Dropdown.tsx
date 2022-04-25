@@ -101,7 +101,7 @@ export default function Dropdown(props: {
                         </svg>
                     </div>
                     <button onClick={_ => removeDropdown(props.field.id)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Remove</button>
-                    <button onClick={_ => addNewDropdown()} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Add</button>
+                    {/* <button onClick={_ => addNewDropdown()} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Add</button> */}
                 </div>
                 {
                     focusInput ? (

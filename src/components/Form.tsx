@@ -79,6 +79,12 @@ const saveFormData = (currentState: formData) => {
     saveLocalForms(updatedLocalForms);
 };
 
+const fetchForms = (setFormsCB: (value: formData[]) => void) => {
+    fetch("https://tsapi.coronasafe.live/api/mock_test/").
+        then((response) => response.json()).
+        then((data) => setFormsCB(data));
+}
+
 export function Form(props: { formId: number }) {
     const [state, setState] = useState(() => initialState(props.formId));
     const [newField, setNewField] = useState("");
@@ -97,6 +103,9 @@ export function Form(props: { formId: number }) {
         }
     }, [])
 
+    useEffect(() => {
+        // fetchForms();
+    }, [])
 
     useEffect(() => {
         let timeout = setTimeout(() => {
@@ -288,7 +297,7 @@ export function Form(props: { formId: number }) {
                                         )
                                     })
                                 }
-                                <button onClick={_ => addNewRadio()} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Add</button>
+                                {/* <button onClick={_ => addNewRadio()} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Add</button> */}
                                 <button onClick={_ => removeRadio(field.id)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Remove</button>
 
                             </div>)
