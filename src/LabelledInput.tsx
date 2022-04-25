@@ -1,6 +1,17 @@
 import React from "react";
 
-export function LabellebInput(props: { key: Number, id: number, value: any, label: string, fieldtype: string, setFieldLabelCB: (label: string, fieldId: number) => void, removeFieldCB: (id: number) => void, passValueCB: (value: string, id: number) => void }) {
+export function LabellebInput(
+    props:
+        {
+            key: Number,
+            id: number,
+            value: any,
+            label: string,
+            fieldtype: string,
+            setFieldLabelCB: (label: string, fieldId: number) => void,
+            removeFieldCB: (id: number) => void,
+            //  passValueCB: (value: string, id: number) => void
+        }) {
 
     return (
         <div className="flex justify-between items-center">

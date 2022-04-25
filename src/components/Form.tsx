@@ -1,19 +1,13 @@
 import { Link, navigate } from "raviger";
 import React, { useState, useEffect, useRef } from "react";
 import { LabellebInput } from "../LabelledInput";
+import Dropdown from "./Dropdown";
 
 export interface formData {
     id: number,
     title: string,
     formFields: formField[];
 }
-
-// interface formField {
-//     id: number,
-//     label: string,
-//     fieldtype: textFieldTypes,
-//     value: string
-// }
 
 type textFieldTypes = "text" | "email" | "date" | "number"
 
@@ -25,22 +19,31 @@ type TextField = {
     value: string
 }
 
-type DropdownField = {
+export type DropdownField = {
     kind: "dropdown",
+    id: number,
+    label: string,
+    options: string[],
+    value: string[]
+}
+
+type RadioField = {
+    kind: "radio",
     id: number,
     label: string,
     options: string[],
     value: string
 }
 
-type formField = TextField | DropdownField
+export type formField = TextField | DropdownField | RadioField
 
 const initialFormFields: formField[] = [
     { kind: "text", id: 1, label: "First Name", fieldtype: "text", value: "" },
     { kind: "text", id: 2, label: "Last Name", fieldtype: "text", value: "" },
     { kind: "text", id: 3, label: "Email", fieldtype: "email", value: "" },
     { kind: "text", id: 4, label: "Date of Birth", fieldtype: "date", value: "" },
-    { kind: "text", id: 5, label: "Phone Number", fieldtype: "number", value: "" }
+    { kind: "dropdown", id: 5, label: "Priority", options: ["Low", "High", "Med", "Avg"], value: [] },
+    // { kind: "radio", id: 6, label: "Choose your Fav Framework", options: ["React", "Angular", "Vue"], value: "" },
 ]
 
 const fieldTypes = ["text", "email", "date", "number"];
@@ -130,21 +133,17 @@ export function Form(props: { formId: number }) {
 
     const clearForm = () => setState({
         ...state,
-        formFields: state.formFields.map(field => ({ ...field, value: "" }))
-    })
-
-    const setValue = (value: string, id: number) => setState({
-        ...state,
         formFields: state.formFields.map(field => {
-            if (field.id === id)
-                return {
-                    ...field,
-                    value: value
-                }
-            return field;
+            if (field.kind === "text")
+                return { ...field, value: "" }
+            else if (field.kind === "radio") return { ...field, value: "" }
+            else
+                setdropDownvalues([])
+            return { ...field, values: [] }
         })
     })
-    const setTitle = (label: string, fieldId: number) =>
+
+    const setFieldLabel = (label: string, fieldId: number) =>
         setState({
             ...state,
             formFields: state.formFields.map(field => {
@@ -156,6 +155,98 @@ export function Form(props: { formId: number }) {
                 return field
             })
         })
+
+    const removeOption = (id: number, index: number) => {
+        setState({
+            ...state,
+            formFields: state.formFields.map(field => {
+                if (field.id === id && field.kind === "dropdown") {
+                    field.options.splice(index, 1);
+                    return field
+                }
+                return field
+            })
+        })
+    }
+    const [newOption, setNewOption] = useState('');
+
+    const setNewOptionLabel = (e: string) => setNewOption(e);
+
+    const addNewDropdown = () => {
+        setState({
+            ...state,
+            formFields: [...state.formFields,
+            { kind: "dropdown", id: Number(new Date()), label: "New Dropdown", options: ["Low", "High", "Med", "Avg"], value: [] }
+            ]
+        })
+    }
+    const addNewOption = (id: number) => {
+        setState({
+            ...state,
+            formFields: state.formFields.map(field => {
+                if (field.id === id && field.kind === "dropdown") {
+                    field.options.push(newOption)
+                    return field
+                }
+                return field
+            })
+        })
+        setNewOption('');
+    }
+
+    const setDropOptions = (option: string, id: number, index: number) => {
+        setState({
+            ...state,
+            formFields: state.formFields.map(field => {
+                if (field.id === id && field.kind === "dropdown") {
+                    field.options[index] = option
+                    return field
+                }
+                return field
+            })
+        })
+    }
+
+    const initialDropdownState = (id: Number) => {
+        const { value } = state.formFields.filter(field => field.id === id && field.kind === "dropdown")[0];
+        return typeof value !== "string" ? value : []
+    }
+
+
+    const initialDropdownValues: () => string[] = () => {
+        const { value } = state.formFields.filter(field => field.kind === "dropdown")[0];
+        return typeof value !== "string" ? value : []
+    }
+
+    const [dropDownvalues, setdropDownvalues] = useState(() => initialDropdownValues());
+
+    const saveDropdownValues = (checkedOption: string, id: number, options: string[]) => {
+        const filteredDropValues = dropDownvalues.filter(value => value !== checkedOption);
+        dropDownvalues.includes(checkedOption) ? setdropDownvalues(filteredDropValues) : setdropDownvalues([...dropDownvalues, checkedOption])
+        setState({
+            ...state,
+            formFields: state.formFields.map(field => {
+                if (field.id === id)
+                    return {
+                        ...field,
+                        kind: "dropdown",
+                        options: options,
+                        value: dropDownvalues.includes(checkedOption) ? filteredDropValues : [...dropDownvalues, checkedOption]
+                    }
+                return field
+            })
+        })
+    }
+    const removeDropdown = (id: number) => {
+        setState({
+            ...state,
+            formFields: state.formFields.filter(field => field.id !== id)
+        })
+    }
+
+    const setStateprop = (state1: formData) => {
+        setState(state1)
+    }
 
     return (
         <div className='flex flex-col gap-4 p-4 divide-y '>
@@ -173,11 +264,30 @@ export function Form(props: { formId: number }) {
                                 label={field.label}
                                 fieldtype={field.fieldtype}
                                 removeFieldCB={removeField}
-                                passValueCB={setValue}
-                                setFieldLabelCB={setTitle} />
+                                // passValueCB={setValue}
+                                setFieldLabelCB={setFieldLabel} />
 
                         case "dropdown":
-                            return <div></div>
+                            return <Dropdown
+                                key={field.id}
+                                field={field}
+                                setFieldLabelCB={setFieldLabel}
+                                addNewDropdownCB={addNewDropdown}
+                                setDropOptionsCB={setDropOptions}
+                                removeOptionCB={removeOption}
+                                // saveDropdownValuesCB={saveDropdownValues}
+                                addNewOptionCB={addNewOption}
+                                setNewOptionLabelCB={setNewOptionLabel}
+                                newOption={newOption}
+                                // dropDownvalues={dropDownvalues}
+                                removeDropdownCB={removeDropdown}
+                                state={state}
+                                setStatepropCB={setStateprop}
+                            // initialDropdownStateCB={initialDropdownState}
+                            />
+
+                        case "radio":
+                            return <div className=""></div>
                         default:
                             break;
                     }

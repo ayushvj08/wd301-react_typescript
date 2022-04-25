@@ -30,11 +30,13 @@ export default function PreviewForm(props: { formId: Number }) {
                     state.kind === "text" ? (
                         <div>
                             <label className='w-full block'>{currentIndex() + 1}. {state.label}</label>
-                            <input type={state.fieldtype} className='border-2 border-gray-200 rounded-lg m-2' onChange={e => setVal(e.target.value)} value={val} />
+                            <input type={state.fieldtype} placeholder="Write Your Answer Here" className='border-2 border-gray-200 rounded-lg m-2' onChange={e => setVal(e.target.value)} value={val} />
                             <button onClick={changeQuestion} className='block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Next</button>
                         </div>)
                         : (
-                            <div>Dropdown</div>
+                            <div>Dropdown Field
+                                <button onClick={changeQuestion} className='block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Next</button>
+                            </div>
                         )
 
 
