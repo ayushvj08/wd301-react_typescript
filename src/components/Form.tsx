@@ -89,31 +89,93 @@ type AddAction = {
     label: string,
     callback: () => void
 }
-type FormActions = AddAction | RemoveAction
-
-type ChangeText = {
-    type: "change_text",
-    value: string
+type UpdateTitleAction = {
+    type: "update_title",
+    title: string
 }
-type ClearText = {
-    type: "clear_text",
+type UpdateFieldLabelAction = {
+    type: "update_label",
+    fieldId: number,
+    label: string
 }
-
-type NewFieldActions = ChangeText | ClearText
-
-const newFieldReducer = (state: string, action: NewFieldActions) => {
-    switch (action.type) {
-        case "change_text": {
-            return action.value
-        }
-        case "clear_text":
-            return "";
-    }
+type ClearFormAction = {
+    type: "clear_form"
 }
+type SetStateAction = {
+    type: "set_state",
+    state: formData
+}
+type FormActions = AddAction | RemoveAction | UpdateTitleAction | UpdateFieldLabelAction | ClearFormAction | SetStateAction
+
 
 export function Form(props: { formId: number }) {
-    const [state, setState] = useState(() => initialState(props.formId));
-    const [newField, dispatch] = useReducer(newFieldReducer, "");
+
+
+    // Action Reducer
+    const reducer = (state: formData, action: FormActions) => {
+        switch (action.type) {
+            case "add_field": {
+                const newFormField = getNewFormField()
+                if (newField.length > 0) {
+                    action.callback();
+                    return {
+                        ...state,
+                        formFields: [...state.formFields, newFormField]
+                    }
+                }
+                return state
+            }
+            case "remove_field": {
+                return {
+                    ...state,
+                    formFields: state.formFields.filter(field => field.id !== action.id)
+                }
+            }
+            case "update_title": {
+                return {
+                    ...state,
+                    title: action.title
+                }
+            }
+            case "update_label": {
+                return {
+                    ...state,
+                    formFields: state.formFields.map(field => {
+                        if (field.id === action.fieldId)
+                            return {
+                                ...field,
+                                label: action.label
+                            }
+                        return field
+                    })
+                }
+            }
+            case "clear_form": {
+                return {
+                    ...state,
+                    formFields: state.formFields.map(field => {
+                        if (field.kind === "text")
+                            return { ...field, value: "" }
+                        else if (field.kind === "radio")
+                            return { ...field, value: "" }
+                        else
+                            // setdropDownvalues([])
+                            return { ...field, values: [] }
+                    })
+                }
+            }
+            case "set_state": {
+                return {
+                    ...state,
+                    // action
+                }
+            }
+        }
+    }
+
+
+    const [state, dispatch] = useReducer(reducer, null, () => initialState(props.formId));
+    const [newField, setNewField] = useState("");
     const [newFieldType, setNewFieldType] = useState(fieldTypes[0]);
     const titleRef = useRef<HTMLInputElement>(null);
 
@@ -143,34 +205,12 @@ export function Form(props: { formId: number }) {
         state.id !== props.formId && navigate(`/forms/${state.id}`)
     }, [state.id, props.formId])
 
-    // Action Reducer
-    const reducer = (state: formData, action: FormActions) => {
-        switch (action.type) {
-            case "add_field": {
-                const newFormField = getNewFormField()
-                if (newField.length > 0) {
-                    action.callback();
-                    return {
-                        ...state,
-                        formFields: [...state.formFields, newFormField]
-                    }
-                }
-                return state
-            }
-            case "remove_field": {
-                return {
-                    ...state,
-                    formFields: state.formFields.filter(field => field.id !== action.id)
-                }
-            }
-        }
-    }
+    // const dispatchAction = (action: FormActions) => {
+    //     setState((prevState) => {
+    //         return reducer(prevState, action)
+    //     })
+    // }
 
-    const dispatchAction = (action: FormActions) => {
-        setState((prevState) => {
-            return reducer(prevState, action)
-        })
-    }
     const getNewFormField: () => formField = () => {
         if (newFieldType === "dropdown") {
             return {
@@ -186,41 +226,20 @@ export function Form(props: { formId: number }) {
         }
     }
 
-    const clearForm = () => setState({
-        ...state,
-        formFields: state.formFields.map(field => {
-            if (field.kind === "text")
-                return { ...field, value: "" }
-            else if (field.kind === "radio") return { ...field, value: "" }
-            else
-                // setdropDownvalues([])
-                return { ...field, values: [] }
-        })
-    })
+    const clearForm = () => dispatch({ type: "clear_form" })
 
     const setFieldLabel = (label: string, fieldId: number) =>
-        setState({
-            ...state,
-            formFields: state.formFields.map(field => {
-                if (field.id === fieldId)
-                    return {
-                        ...field,
-                        label: label
-                    }
-                return field
-            })
-        })
+        dispatch({ type: "update_label", label: label, fieldId: fieldId })
 
     const setStateprop = (state1: formData) => {
-        setState(state1)
+        dispatch({ type: "set_state", state: state1 })
     }
-
 
 
     return (
         <div className='flex flex-col gap-4 p-4 divide-y '>
             <input type="text" ref={titleRef} value={state.title} className="border-2 border-gray-200 rounded-lg pd-2 m-2 flex-1"
-                onChange={e => { setState({ ...state, title: e.target.value }) }} />
+                onChange={e => { dispatch({ type: "update_title", title: e.target.value }) }} />
             <div className="divide-dotted">
 
                 {state.formFields.map(field => {
@@ -232,7 +251,7 @@ export function Form(props: { formId: number }) {
                                 value={field.value}
                                 label={field.label}
                                 fieldtype={field.fieldtype}
-                                removeFieldCB={id => dispatchAction({ type: "remove_field", id: id })}
+                                removeFieldCB={id => dispatch({ type: "remove_field", id: id })}
                                 // passValueCB={setValue}
                                 setFieldLabelCB={setFieldLabel} />
 
@@ -243,7 +262,7 @@ export function Form(props: { formId: number }) {
                                 state={state}
                                 setFieldLabelCB={setFieldLabel}
                                 setStatepropCB={setStateprop}
-                                removeFieldCB={id => dispatchAction({ type: "remove_field", id: id })}
+                                removeFieldCB={id => dispatch({ type: "remove_field", id: id })}
                             />
 
                         case "radio":
@@ -253,7 +272,7 @@ export function Form(props: { formId: number }) {
                                 state={state}
                                 setFieldLabelCB={setFieldLabel}
                                 setStatepropCB={setStateprop}
-                                removeFieldCB={id => dispatchAction({ type: "remove_field", id: id })}
+                                removeFieldCB={id => dispatch({ type: "remove_field", id: id })}
                             />
                         default:
                             break;
@@ -264,15 +283,15 @@ export function Form(props: { formId: number }) {
             </div>
             <div className="flex gap-2">
                 <input type="text" value={newField} className="border-2 border-gray-200 rounded-lg pd-2 m-2 flex-1" placeholder="Add New Field"
-                    onChange={e => dispatch({ type: "change_text", value: e.target.value })} />
+                    onChange={e => setNewField(e.target.value)} />
                 <select name='formFieldTypes' onChange={e => setNewFieldType(e.target.value)}>
                     {fieldTypes.map(type => <option key={type} value={type}>{type}</option>)}
                 </select>
                 <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'
-                    onClick={(_) => dispatchAction({
+                    onClick={(_) => dispatch({
                         type: "add_field",
                         label: newField,
-                        callback: () => dispatch({ type: "clear_text" })
+                        callback: () => setNewField('')
                     })}
                 >Add Field</button>
             </div>
