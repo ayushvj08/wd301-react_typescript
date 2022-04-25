@@ -109,7 +109,7 @@ export default function Dropdown(props: {
                             {
                                 props.field.options.map((option) => {
                                     return (
-                                        <div key={option} className="flex items-center m-1">
+                                        <div className="flex items-center m-1">
                                             <input type={'checkbox'}
                                                 checked={dropDownvalues.includes(option) ? true : false}
                                                 onChange={e => saveDropdownValues(option, props.field.id, props.field.options)}
