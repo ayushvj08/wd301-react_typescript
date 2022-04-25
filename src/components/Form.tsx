@@ -1,5 +1,5 @@
 import { Link, navigate } from "raviger";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useReducer } from "react";
 import { LabellebInput } from "../LabelledInput";
 import Dropdown from "./Dropdown";
 import Radio from "./Radio";
@@ -80,9 +80,39 @@ const saveFormData = (currentState: formData) => {
     saveLocalForms(updatedLocalForms);
 };
 
+type RemoveAction = {
+    type: "remove_field",
+    id: number
+}
+type AddAction = {
+    type: "add_field",
+    label: string,
+}
+type FormActions = AddAction | RemoveAction
+
+type ChangeText = {
+    type: "change_text",
+    value: string
+}
+type ClearText = {
+    type: "clear_text",
+}
+
+type NewFieldActions = ChangeText | ClearText
+
+const newFieldReducer = (state: string, action: NewFieldActions) => {
+    switch (action.type) {
+        case "change_text": {
+            return action.value
+        }
+        case "clear_text":
+            return "";
+    }
+}
+
 export function Form(props: { formId: number }) {
     const [state, setState] = useState(() => initialState(props.formId));
-    const [newField, setNewField] = useState("");
+    const [newField, dispatch] = useReducer(newFieldReducer, "");
     const [newFieldType, setNewFieldType] = useState(fieldTypes[0]);
     const titleRef = useRef<HTMLInputElement>(null);
 
@@ -112,39 +142,58 @@ export function Form(props: { formId: number }) {
         state.id !== props.formId && navigate(`/forms/${state.id}`)
     }, [state.id, props.formId])
 
-
-    const addField = () => {
-        const newFormField: () => formField = () => {
-            console.log(newField)
-            if (newFieldType === "dropdown") {
-                return {
-                    kind: "dropdown", id: Number(new Date()), label: "Priority", options: ["Low", "High", "Med", "Avg"], value: []
-
-                }
+    const reducer = (state: formData, action: FormActions) => {
+        switch (action.type) {
+            case "add_field": {
+                const newFormField = getNewFormField()
+                if (newField.length > 0)
+                    return {
+                        ...state,
+                        formFields: [...state.formFields, newFormField]
+                    }
+                return state
             }
-            else if (newFieldType === "radio")
+            case "remove_field": {
                 return {
-                    kind: "radio", id: Number(new Date()), label: 'newField', options: ["React", "Angular", "Vue"], value: ""
+                    ...state,
+                    formFields: state.formFields.filter(field => field.id !== action.id)
                 }
-            else return {
-                kind: "text", id: Number(new Date()), label: 'newField', fieldtype: "text", value: ''
             }
         }
-        setState({
-            ...state,
-            formFields: [
-                ...state.formFields,
-                newFormField()
-            ]
-
-        })
-        setNewField("");
     }
 
-    const removeField = (id: number) => setState({
-        ...state,
-        formFields: state.formFields.filter(field => field.id !== id)
-    })
+    const getNewFormField: () => formField = () => {
+        if (newFieldType === "dropdown") {
+            return {
+                kind: "dropdown", id: Number(new Date()), label: newField, options: ["Low", "High", "Med", "Avg"], value: []
+            }
+        }
+        else if (newFieldType === "radio")
+            return {
+                kind: "radio", id: Number(new Date()), label: newField, options: ["React", "Angular", "Vue"], value: ""
+            }
+        else return {
+            kind: "text", id: Number(new Date()), label: newField, fieldtype: "text", value: ''
+        }
+    }
+    const dispatchAction = (action: FormActions) => {
+        setState((prevState) => {
+            return reducer(prevState, action)
+        })
+    }
+
+    // const addField = () => {
+    //     setState({
+    //         ...state,
+    //         formFields: [...state.formFields, getNewFormField()]
+    //     })
+    //     dispatch({ type: "clear_text" });
+    // }
+
+    // const removeField = (id: number) => setState({
+    //     ...state,
+    //     formFields: state.formFields.filter(field => field.id !== id)
+    // })
 
     const clearForm = () => setState({
         ...state,
@@ -171,20 +220,6 @@ export function Form(props: { formId: number }) {
             })
         })
 
-    const removeOption = (id: number, index: number) => {
-        setState({
-            ...state,
-            formFields: state.formFields.map(field => {
-                if (field.id === id && field.kind === "dropdown") {
-                    field.options.splice(index, 1);
-                    return field
-                }
-                return field
-            })
-        })
-    }
-
-
     const setStateprop = (state1: formData) => {
         setState(state1)
     }
@@ -206,7 +241,7 @@ export function Form(props: { formId: number }) {
                                 value={field.value}
                                 label={field.label}
                                 fieldtype={field.fieldtype}
-                                removeFieldCB={removeField}
+                                removeFieldCB={id => dispatchAction({ type: "remove_field", id: id })}
                                 // passValueCB={setValue}
                                 setFieldLabelCB={setFieldLabel} />
 
@@ -214,19 +249,20 @@ export function Form(props: { formId: number }) {
                             return <Dropdown
                                 key={field.id}
                                 field={field}
-                                setFieldLabelCB={setFieldLabel}
-                                removeOptionCB={removeOption}
                                 state={state}
+                                setFieldLabelCB={setFieldLabel}
                                 setStatepropCB={setStateprop}
+                                removeFieldCB={id => dispatchAction({ type: "remove_field", id: id })}
                             />
 
                         case "radio":
                             return <Radio
                                 key={field.id}
                                 field={field}
+                                state={state}
                                 setFieldLabelCB={setFieldLabel}
                                 setStatepropCB={setStateprop}
-                                state={state}
+                                removeFieldCB={id => dispatchAction({ type: "remove_field", id: id })}
                             />
                         default:
                             break;
@@ -237,11 +273,12 @@ export function Form(props: { formId: number }) {
             </div>
             <div className="flex gap-2">
                 <input type="text" value={newField} className="border-2 border-gray-200 rounded-lg pd-2 m-2 flex-1"
-                    onChange={e => setNewField(e.target.value)} />
+                    onChange={e => dispatch({ type: "change_text", value: e.target.value })} />
                 <select name='formFieldTypes' onChange={e => setNewFieldType(e.target.value)}>
                     {fieldTypes.map(type => <option key={type} value={type}>{type}</option>)}
                 </select>
-                <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg' onClick={addField}
+                <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'
+                    onClick={(_) => dispatchAction({ type: "add_field", label: newField })}
                 >Add Field</button>
             </div>
             <div className="flex gap-4">

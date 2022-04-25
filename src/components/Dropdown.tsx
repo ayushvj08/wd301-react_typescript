@@ -4,10 +4,11 @@ import { DropdownField, formField, formData } from "./Form";
 export default function Dropdown(props: {
     key: number
     field: DropdownField,
-    removeOptionCB: (id: number, index: number) => void,
     setFieldLabelCB: (label: string, fieldId: number) => void
     state: formData,
-    setStatepropCB: (state1: formData) => void
+    setStatepropCB: (state1: formData) => void,
+    removeFieldCB: (id: number) => void
+
 }) {
 
     const [focusInput, setInputFocus] = useState(Boolean);
@@ -37,25 +38,9 @@ export default function Dropdown(props: {
     }
 
 
-    const removeDropdown = (id: number) => {
-        props.setStatepropCB({
-            ...props.state,
-            formFields: props.state.formFields.filter(field => field.id !== id)
-        })
-    }
-
     const [newOption, setNewOption] = useState('');
 
     const setNewOptionLabel = (e: string) => setNewOption(e);
-
-    const addNewDropdown = () => {
-        props.setStatepropCB({
-            ...props.state,
-            formFields: [...props.state.formFields,
-            { kind: "dropdown", id: Number(new Date()), label: "New Dropdown", options: ["Low", "High", "Med", "Avg"], value: [] }
-            ]
-        })
-    }
 
     const addNewOption = (id: number) => {
         props.setStatepropCB({
@@ -69,6 +54,19 @@ export default function Dropdown(props: {
             })
         })
         setNewOption('');
+    }
+
+    const removeOption = (id: number, index: number) => {
+        props.setStatepropCB({
+            ...props.state,
+            formFields: props.state.formFields.map(field => {
+                if (field.id === id && field.kind === "dropdown") {
+                    field.options.splice(index, 1);
+                    return field
+                }
+                return field
+            })
+        })
     }
 
     const setDropOptions = (option: string, id: number, index: number) => {
@@ -100,7 +98,7 @@ export default function Dropdown(props: {
                             }
                         </svg>
                     </div>
-                    <button onClick={_ => removeDropdown(props.field.id)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Remove</button>
+                    <button onClick={_ => props.removeFieldCB(props.field.id)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Remove</button>
                     {/* <button onClick={_ => addNewDropdown()} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Add</button> */}
                 </div>
                 {
@@ -120,7 +118,7 @@ export default function Dropdown(props: {
                                                     value={option}
                                                 />
                                             </p>
-                                            <button onClick={() => props.removeOptionCB(props.field.id, props.field.options.indexOf(option))}>X</button>
+                                            <button onClick={() => removeOption(props.field.id, props.field.options.indexOf(option))}>X</button>
                                         </div>
 
                                     )

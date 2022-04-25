@@ -5,7 +5,9 @@ export default function Radio(props: {
     field: RadioField,
     setStatepropCB: (state1: formData) => void,
     state: formData,
-    setFieldLabelCB: (label: string, fieldId: number) => void
+    setFieldLabelCB: (label: string, fieldId: number) => void,
+    removeFieldCB: (id: number) => void
+
 }) {
 
     const initialRadioValue = (id: number) => {
@@ -42,12 +44,6 @@ export default function Radio(props: {
             })
         })
     }
-    const removeRadio = (id: number) => {
-        props.setStatepropCB({
-            ...props.state,
-            formFields: props.state.formFields.filter(field => field.id !== id)
-        })
-    }
 
     return (
         <div className="" key={props.field.id}>
@@ -70,7 +66,7 @@ export default function Radio(props: {
                 })
             }
             {/* <button onClick={_ => addNewRadio()} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Add</button> */}
-            <button onClick={_ => removeRadio(props.field.id)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Remove</button>
+            <button onClick={_ => props.removeFieldCB(props.field.id)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'>Remove</button>
 
         </div>
     )
