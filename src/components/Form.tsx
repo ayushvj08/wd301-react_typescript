@@ -87,6 +87,7 @@ type RemoveAction = {
 type AddAction = {
     type: "add_field",
     label: string,
+    callback: () => void
 }
 type FormActions = AddAction | RemoveAction
 
@@ -142,15 +143,18 @@ export function Form(props: { formId: number }) {
         state.id !== props.formId && navigate(`/forms/${state.id}`)
     }, [state.id, props.formId])
 
+    // Action Reducer
     const reducer = (state: formData, action: FormActions) => {
         switch (action.type) {
             case "add_field": {
                 const newFormField = getNewFormField()
-                if (newField.length > 0)
+                if (newField.length > 0) {
+                    action.callback();
                     return {
                         ...state,
                         formFields: [...state.formFields, newFormField]
                     }
+                }
                 return state
             }
             case "remove_field": {
@@ -162,6 +166,11 @@ export function Form(props: { formId: number }) {
         }
     }
 
+    const dispatchAction = (action: FormActions) => {
+        setState((prevState) => {
+            return reducer(prevState, action)
+        })
+    }
     const getNewFormField: () => formField = () => {
         if (newFieldType === "dropdown") {
             return {
@@ -176,24 +185,6 @@ export function Form(props: { formId: number }) {
             kind: "text", id: Number(new Date()), label: newField, fieldtype: "text", value: ''
         }
     }
-    const dispatchAction = (action: FormActions) => {
-        setState((prevState) => {
-            return reducer(prevState, action)
-        })
-    }
-
-    // const addField = () => {
-    //     setState({
-    //         ...state,
-    //         formFields: [...state.formFields, getNewFormField()]
-    //     })
-    //     dispatch({ type: "clear_text" });
-    // }
-
-    // const removeField = (id: number) => setState({
-    //     ...state,
-    //     formFields: state.formFields.filter(field => field.id !== id)
-    // })
 
     const clearForm = () => setState({
         ...state,
@@ -272,13 +263,17 @@ export function Form(props: { formId: number }) {
 
             </div>
             <div className="flex gap-2">
-                <input type="text" value={newField} className="border-2 border-gray-200 rounded-lg pd-2 m-2 flex-1"
+                <input type="text" value={newField} className="border-2 border-gray-200 rounded-lg pd-2 m-2 flex-1" placeholder="Add New Field"
                     onChange={e => dispatch({ type: "change_text", value: e.target.value })} />
                 <select name='formFieldTypes' onChange={e => setNewFieldType(e.target.value)}>
                     {fieldTypes.map(type => <option key={type} value={type}>{type}</option>)}
                 </select>
                 <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-4 mx-2 rounded-lg'
-                    onClick={(_) => dispatchAction({ type: "add_field", label: newField })}
+                    onClick={(_) => dispatchAction({
+                        type: "add_field",
+                        label: newField,
+                        callback: () => dispatch({ type: "clear_text" })
+                    })}
                 >Add Field</button>
             </div>
             <div className="flex gap-4">
