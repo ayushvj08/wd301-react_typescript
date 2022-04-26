@@ -69,7 +69,6 @@ export default function PreviewForm(props: { formId: Number }) {
                                         return (
                                             <div key={option + state.kind} className="flex items-center m-1">
                                                 <input type={'checkbox'}
-                                                    // onChange={e => setAnswer([...answer, { label: state.label, answer: option }])}
                                                     onChange={e => setVal(e.target.value)}
                                                 />
                                                 <p className="px-2">
@@ -91,7 +90,6 @@ export default function PreviewForm(props: { formId: Number }) {
                             state.options.map((option) => {
                                 return (<div key={option + state.id}>
                                     <input type="radio"
-                                        // onChange={e => setAnswer([...answer, { label: state.label, answer: option }])}
                                         onChange={e => setVal(e.target.value)}
                                         className="m-2" value={option} />
                                     <label >
